@@ -9,6 +9,7 @@ class UsersDB(db.DynamicDocument):
     password = db.StringField(required=True, min_length=6) 
     last_login = db.StringField()
     current_login = db.StringField()
+  
 
     def hash_password(self):
         self.password = generate_password_hash(self.password).decode('utf8')
@@ -23,6 +24,8 @@ class UsersDB(db.DynamicDocument):
         # print("Update time time {}".format)
 
 class UserGists(db.DynamicDocument):
-    meta = {'collection':'user_gists'}
+    meta = {'collection' : 'user_gists'}
+    id = db.StringField(primary_key=True)
+
 #d.strftime('%Y-%m-%dT%H:%M:%SZ')
 #datetime.strptime("2001-2-3 10:11:12", "%Y-%m-%d %H:%M:%S")

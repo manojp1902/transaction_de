@@ -99,30 +99,22 @@ class CreateActivity(Resource):
     def post(self):
         """
         Call this api to update continuously all users' github gists into pipedrive
+        This can be done using a shell script which calls /api/create/activity api.
+        For every user, we get the gists from github and maintain the gists in mongodb.
+        Once put into mongodb, pipedrive api is called to create activity.
         """
         users = UsersDB.objects().all()
+
         for user in users:
             gists_response = requests.get("https://api.github.com/users/"+user.username+"/gists")
             gists_json = json.loads(gists_response.text)
             for gist in gists_json:
-                gist['gid'] = gist['id']
-                del(gist['id'])
-                #Mongo doesnt take $ or '.' , so data has to be cleaned.
+                #Mongo doesnt take '$' or '.' in keys , so data has to be cleaned.
                 gist_cleaned=self.remove_dots(gist)
                 # UserGists.from_json(json.dumps(gist)).save()
-                #TODO:change date from string to datetime object for querying with lastlogin
                 UserGists(**gist_cleaned).save()
                 #TODO: also convert the gists into pipedrive api activity
 
-    
-
-
-
-
-
-        
-
-       
 
 
 api.add_resource(SignupApi, '/api/signup')
