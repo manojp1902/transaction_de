@@ -19,10 +19,10 @@ jwt = JWTManager(app)
 app.config['MONGODB_SETTINGS'] = {
     
        'db': 'test_db',
-        'host': '',
+        'host': 'mongodb+srv://cluster0.hpqql.mongodb.net',
         'port': 27017,
-        'username':'',
-        'password':''
+        'username':'mongo_user2',
+        'password':'Cisco123'
     }
 
 initialize_db(app)
@@ -70,14 +70,21 @@ class LatestGists(Resource):
         # users=UsersDB.objects().get(username=)
         user_id = get_jwt_identity()
         user = UsersDB.objects.get(id=user_id)
+        
+        last_login = user.last_login
+        if last_login is None:
+            return {'gists': 'This is first login. Gists info will appear for future logins.\n '
+                              ' Please logout and login again. '}
         # for user in users:
         #     print("getting gist for user {}".format(user.username))
         gists_response = requests.get("https://api.github.com/users/"+user.username+"/gists")
         gists_json = json.loads(gists_response.text)
-        if user.username == 'appym005':
+        if user.username == 'gitwithash':
             return { 'gists':gists_json}
+        #code to filter documents after last_login
+        objects_since_llogin = UsersDB.objects.filter(created_at__gt=last_login)
+        return {'message' :'Gists since last login'+last_login,'gists':objects_since_llogin}
         #     # UserGists(gists_json).save()
-        #TODO: query to give gisst since lastlogin
 
 
 class CreateActivity(Resource):
