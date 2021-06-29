@@ -1,0 +1,36 @@
+<html lang="en">
+
+<!-- <head>
+    <meta charset="UTF-8">
+    <title>Pipedrive App</title>
+
+</head> -->
+
+<body>
+    <h1>Pipedrive App</h1>
+    <div>Register USer for pipedrive with api_token from pipedrive:
+        <form action="{{ url_for('signupapi')}}" method="POST" enctype="multipart/form-data">
+            Username with github gists<input type="text" name="username" label="username"><br>
+            Dummy Password <input type="text" name="password"><br>
+            Api Token from Pipedrive <input type="text" name="api_token"><br>
+            Company Domain from pipedrive <input type="text" name="company_domain"><br>
+            <input type="submit" value="Create User" class="button">
+        </form>
+    </div>
+    <!-- <div> 
+        <h2>Incomplete Items</h2> 
+        <ul> 
+            {% for todo in incomplete %} 
+            <li style="font-size: 30pt" class='mark'>{{ todo.text }} <a href="{{ url_for('complete', id=todo.id) }}">Mark As Complete</a></li> 
+            {% endfor %}     
+        </ul> 
+        <h2>Completed Items</h2> 
+        <ul> 
+            {% for todo in complete %} 
+            <li style="font-size: 30pt">{{ todo.text }}</li> 
+            {% endfor %} 
+        </ul> 
+    </div>  -->
+</body>
+
+</html>

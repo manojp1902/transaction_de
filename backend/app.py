@@ -1,5 +1,6 @@
-from flask import Flask, request
+from flask import Flask, request,render_template , make_response
 from flask_restful import Resource, Api,reqparse,request
+import flask
 import json
 import datetime
 from flask.json import jsonify
@@ -12,9 +13,11 @@ from flask_jwt_extended import JWTManager
 from flask_jwt_extended import jwt_required, get_jwt_identity
 import requests
 import json
+import os
+
 
 app = Flask(__name__)
-app.config.from_envvar('ENV_FILE_LOCATION')
+app.config['JWT_SECRET_KEY']= os.environ['JWT_SECRET_KEY']
 jwt = JWTManager(app)
 app.config['MONGODB_SETTINGS'] = {
     
@@ -30,19 +33,29 @@ initialize_db(app)
 api = Api(app)
 
 class SignupApi(Resource):
-     def post(self):
-        body = request.get_json()
-        user = UsersDB(**body)
+    def post(self):
+        #issue: request.get_json works for postman not for html form
+        # body = request.get_json(force=True)
+        print(request.form.get('username'))
+        user = UsersDB(username=request.form.get('username'),
+                        password=request.form.get('password'),
+                        api_token = request.form.get('api_token'),
+                        company_domain=request.form.get('company_domain'))
         user.hash_password()
         user.save()
         id = user.id
         return {'id': str(id)}, 201
+    
+    def get(self):
+        #add headers to avoid displaying only text in browser
+        headers = {'Content-Type': 'text/html','Access-Control-Allow-Origin':'*'}
+        return make_response(render_template('index.html'))
 
 class LoginApi(Resource):
     def post(self):
-        body = request.get_json()
-        user = UsersDB.objects.get(username=body.get('username'))
-        authorized = user.check_password(body.get('password'))
+        
+        user = UsersDB.objects.get(username=request.form.get('username'))
+        authorized = user.check_password(password=request.form.get('password'))
 
         
 
@@ -60,8 +73,10 @@ class LoginApi(Resource):
                     "last_login": str(last_login),
                     'token': access_token
                      },201
+            # flask.redirect(flask.url_for('latestgists'), code=307)
         
-
+    def get(self):
+        return make_response(render_template('login.html')) 
     
 class LatestGists(Resource):
     #cannot run background task for specific user , update for all users in database
@@ -75,16 +90,13 @@ class LatestGists(Resource):
         if last_login is None:
             return {'gists': 'This is first login. Gists info will appear for future logins.\n '
                               ' Please logout and login again. '}
-        # for user in users:
-        #     print("getting gist for user {}".format(user.username))
-        gists_response = requests.get("https://api.github.com/users/"+user.username+"/gists")
-        gists_json = json.loads(gists_response.text)
-        if user.username == 'gitwithash':
-            return { 'gists':gists_json}
-        #code to filter documents after last_login
-        objects_since_llogin = UsersDB.objects.filter(created_at__gt=last_login)
-        return {'message' :'Gists since last login'+last_login,'gists':objects_since_llogin}
-        #     # UserGists(gists_json).save()
+       
+        print(user.username)
+        #get all documents with user logged in and document created after last login
+        gists_for_user = UserGists.objects.filter(owner__login=user.username, created_at__gt=last_login)
+       
+        return {'message' :'User successfully authenticated.\nGists since last login'+last_login,'gists':gists_for_user.to_json()}
+       
 
 
 class CreateActivity(Resource):
@@ -114,6 +126,12 @@ class CreateActivity(Resource):
                 # UserGists.from_json(json.dumps(gist)).save()
                 UserGists(**gist_cleaned).save()
                 #TODO: also convert the gists into pipedrive api activity
+                #put api_token from pipedrive in query_params
+                params = {'api_token':user.api_token}
+                #Make POST call to create activity api/v1/activities
+                resp = requests.post('https://'+user.company_domain+'.pipedrive.com/api/v1/activities',params)
+                if resp.status_code == 201:
+                    return resp.text
 
 
 
@@ -124,4 +142,4 @@ api.add_resource(CreateActivity, '/api/create/gists')
 
 
 if __name__ == "__main__":
-    app.run(host='localhost',port=5000,debug=True)
+    app.run(host='0.0.0.0',port=8000,debug=True)

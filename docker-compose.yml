@@ -1,0 +1,23 @@
+version: "3.9"
+services:
+  web:
+    build: ./backend
+    volumes:
+      - ./backend:/appdata/
+    environment:
+      - JWT_SECRET_KEY='t1NP63m4wnBg6nyHYKfmc2TpCOGI4nss'
+  nginx:
+    build: ./nginx
+    volumes: 
+      - nginxdata:/var/log/nginx
+    container_name: webserver
+    ports:
+        - 8001:80
+    restart: on-failure
+
+
+
+volumes:
+  nginxdata:
+    driver: local
+  
