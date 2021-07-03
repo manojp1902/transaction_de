@@ -13,13 +13,14 @@ pipelines:
     - parallel:
         - step:
             name: Build and Test
-            script:
-              - IMAGE_NAME=$BITBUCKET_REPO_SLUG
-              - docker build . --file Dockerfile --tag ${IMAGE_NAME}
+            image: docker/compose:latest
             services:
               - docker
             caches:
               - docker
+            script:
+              - docker-compose -v
+              # - docker-compose -f docker-compose.yml up
         - step:
             name: Lint the Dockerfile
             image: hadolint/hadolint:latest-debian
