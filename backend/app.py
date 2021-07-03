@@ -127,11 +127,13 @@ class CreateActivity(Resource):
                 UserGists(**gist_cleaned).save()
                 #TODO: also convert the gists into pipedrive api activity
                 #put api_token from pipedrive in query_params
-                params = {'api_token':user.api_token}
+                params = {}
                 #Make POST call to create activity api/v1/activities
-                resp = requests.post('https://'+user.company_domain+'.pipedrive.com/api/v1/activities',params)
+                activity_payload = {'subject':gist_cleaned, 'type':'task','api_token':user.api_token}
+                resp = requests.post('https://'+user.company_domain+'.pipedrive.com/api/v1/activities',params=activity_payload)
                 if resp.status_code == 201:
-                    return resp.text
+                    return resp.text,201
+                return resp.text, resp.status_code
 
 
 

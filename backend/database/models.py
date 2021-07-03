@@ -9,6 +9,8 @@ class UsersDB(db.DynamicDocument):
     password = db.StringField(required=True, min_length=6) 
     last_login = db.StringField()
     current_login = db.StringField()
+    api_token = db.StringField(required=True)
+    company_domain = db.StringField(required=True)
   
 
     def hash_password(self):
