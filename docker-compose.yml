@@ -26,7 +26,7 @@ services:
     environment: 
       - SCRAPE_URI=http://webserver:8001/metrics
       - NGINX_RETRIES=10
-      - TELEMETRY_PATH=/metrics
+      - TELEMETRY_PATH=/prometheus
       - SSL_VERIFY=false
     # command:
     #   - '-config.file=/etc/prometheus/prometheus.yml'
@@ -38,7 +38,7 @@ services:
       - 9113:9113
     links:
       - nginx:nginx
-    #   - node-exporter:node-exporter
+    
   prometheus:
     image: prom/prometheus:latest
     container_name: monitoring_prometheus
@@ -56,13 +56,13 @@ services:
       - 9090:9090
     links:
       - exporter:exporter
-      # - node-exporter:node-exporter
+     
   grafana:
     image: grafana/grafana:latest
     container_name: monitoring_grafana
     restart: unless-stopped
-    links:
-      - prometheus:prometheus
+    # links:
+    #   - prometheus:prometheus
     volumes:
       - ./data/grafana:/var/lib/grafana
     environment:
@@ -77,7 +77,21 @@ services:
       # - GF_SMTP_FROM_ADDRESS=myaddress@gmail.com
     ports:
       - 3000:3000
-  
+  loki:
+    image: grafana/loki:master-2739551
+    ports:
+      - "3100:3100"
+    restart: unless-stopped
+
+  promtail-nginx:
+    image: grafana/promtail:master-2739551
+    volumes:
+      - ./data/promtail-nginx.yml:/etc/promtail/promtail.yml
+      - ./nginx/nginxdata:/var/log/nginx
+    command:
+      - '-config.file=/etc/promtail/promtail.yml'
+    restart: unless-stopped
+
 
 
 
