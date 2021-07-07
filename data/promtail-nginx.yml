@@ -23,7 +23,7 @@ scrape_configs:
           selector: '{job="nginx"}'
           stages:
             - regex:
-                expression: '^(?P<remote_addr>[\w\.]+) - (?P<remote_user>[^ ]*) \[(?P<time_local>.*)\] "(?P<method>[^ ]*) (?P<request>[^ ]*) (?P<protocol>[^ ]*)" (?P<status>[\d]+) (?P<body_bytes_sent>[\d]+) "(?P<http_referer>[^"]*)" "(?P<http_user_agent>[^"]*)"?'
+                expression: '\[(?P<time_local>.*?)\] "(?P<method>[^ ]*) (?P<request>[^ ]*) (?P<protocol>[^ ]*)" (?P<status>[\d]+) (?P<body_bytes_sent>[\d]+) (?P<request_time>([0-9]*[.])?[0-9]+) (?P<upstream_response_time>([0-9]*[.])?[0-9]+) "(?P<http_referer>[^"]*)" "(?P<http_user_agent>[^"]*)"?'
                 #expression: '^(?P<remote_addr>[\w\.]+) - (?P<remote_user>[^ ]*) \[(?P<time_local>.*)\] "(?P<method>[^ ]*) (?P<request>[^ ]*) (?P<protocol>[^ ]*)" (?P<status>[\d]+) (?P<body_bytes_sent>[\d]+) (?P<request_time>[\d]+) "(?P<upstream_response_time>[^ ]*)" "(?P<http_referer>[^"]*)" "(?P<http_user_agent>[^"]*)"?'
             - labels:
                 #remote_addr:
@@ -34,7 +34,7 @@ scrape_configs:
                 #protocol:
                 status:
                 #body_bytes_sent:
-                # request_time:
-                # upstream_response_time:
+                request_time:
+                upstream_response_time:
                 #http_referer:
                 #http_user_agent:
