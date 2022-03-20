@@ -1,11 +1,13 @@
 import mimetypes
-from flask import Flask, request,render_template , make_response
+from urllib import response
+from flask import Flask, request,render_template , make_response, redirect,url_for
 from flask_restful import Resource, Api,reqparse
 import flask
 import json
 import datetime
 from flask.json import jsonify
-from database.db_config import initialize_db
+from database.db_config import initialize_db, initialise_marshmallow
+from sqlalchemy import create_engine
 
 import  datetime
 from flask_jwt_extended import create_access_token
@@ -17,30 +19,30 @@ import os
 from pathlib import Path
 
 app = Flask(__name__,template_folder='templates')
+engine = create_engine('sqlite:///test.db')
+
 app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///test.db"
 # jwt = JWTManager(app)
-# app.config['MONGODB_SETTINGS'] = {
-    
-#        'db': 'test_db',
-#         'host': 'mongodb+srv://cluster0.hpqql.mongodb.net',
-#         'port': 27017,
-#         'username':'mongo_user2',
-#         'password':'Cisco123'
-#     }
+
 
 initialize_db(app)
+# initialise_marshmallow(app)
 from database.models import Transaction,Balance
 from database.db_config import db
 from flask_migrate import Migrate
 with app.app_context():
     db.create_all()
-# migrate = Migrate(app, db, directory=str((Path(__file__).parent / 'migrations').absolute()))
-# db.create_all()
+
 
 # db.session.commit()
     
 #flask-restful framework`
 api = Api(app)
+
+from sqlalchemy.orm import sessionmaker
+Session = sessionmaker(bind = engine)
+session = Session()
+
 
 # class SignupApi(Resource):
 #     def post(self):
@@ -147,33 +149,43 @@ api = Api(app)
 
 class TransactionApi(Resource):
     def post(self):
-        user_id = request.form.get('user_id')
+        print(request.form)
+        user_id = request.form['user_id']
+        print("userif {}".format(user_id))
         ts= request.form.get('ts','')
         txn_amnt=request.form.get('txn_amnt')
         transaction=Transaction(user_id=user_id,
                                 # ts=ts,
-                                transaction_amt=txn_amnt)
+                                txn_amnt=txn_amnt)
         db.session.add(transaction)
         db.session.commit()
             # flash('Record was successfully added')
-        return jsonify({"message":"User added successfully"})
+        # return jsonify({"message":"User added successfully"})
+        return redirect(url_for('transactionapi'))
     
     def get(self):
 
-        response = make_response(render_template('index.html', foo=42))
+        response = make_response(render_template('transactions.html',transactions=Transaction.query.all()))
         response.headers['Content-Type'] =  'text/html'
         return response
 
+class IndexPage(Resource):
+    def get(self):
+        response=make_response(render_template('index.html'))
+        response.headers['Content-Type'] =  'text/html'
+        return response
 
+class Balance(Resource):
+    def get(self):
+        # distinct_user_ids = session.query(Transaction.user_id).distinct().all()
+        distinct_user_ids=db.session.query(Transaction.user_id).distinct().all()
+        print("distinct user ids {}".format(distinct_user_ids))
+        result=transactions_schema.dump(distinct_user_ids)
+        return jsonify(result.data)
 
-
-
+api.add_resource(IndexPage,'/')
 api.add_resource(TransactionApi,'/api/transaction')
-# api.add_resource(SignupApi, '/api/signup')
-# api.add_resource(LoginApi, '/api/login')
-# api.add_resource(LatestGists, '/api/create/activity')
-# api.add_resource(CreateActivity, '/api/create/gists')
-# api.add_resource(TransactionApi,'/')
+api.add_resource(Balance, '/api/balance')
 
 
 if __name__ == "__main__":

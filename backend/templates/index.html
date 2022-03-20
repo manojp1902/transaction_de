@@ -7,13 +7,18 @@
 </head>
 
 <body>
-    <h1>DE Case setudy</h1>
-    <form action="{{ url_for('transactionapi') }}" method="post">
-        <input type="number" id="user_id" label="UserId" value=25>
-        <input type="number" id="txn_amnt" value=1000>
-        <input type="submit">
-    </form>
-    </div>
+    <center>
+        <h1>DE Case setudy</h1>
+
+        <form action="{{ url_for('transactionapi') }}" method="post">
+
+            <input type="number" id="user_id" name="user_id" label="UserId" placeholder=25>
+            <input type="number" id="txn_amnt" name="txn_amnt" placeholder=1000>
+            <input type="submit">
+        </form>
+        </div>
+    </center>
+
 
 </body>
 

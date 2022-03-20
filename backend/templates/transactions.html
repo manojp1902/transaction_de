@@ -1,0 +1,27 @@
+<html>
+
+<body>
+    <table>
+        <thead>
+            <tr>
+                <th>User ID</th>
+                <th>Time</th>
+                <th>Transaction amount</th>
+
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for txn in transactions %}
+            <tr>
+                <td>{{ txn.user_id }}</td>
+                <td>{{ txn.ts }}</td>
+                <td>{{ txn.transaction_amt }}</td>
+
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+
+</html>
