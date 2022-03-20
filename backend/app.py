@@ -1,3 +1,4 @@
+import mimetypes
 from flask import Flask, request,render_template , make_response
 from flask_restful import Resource, Api,reqparse
 import flask
@@ -5,7 +6,7 @@ import json
 import datetime
 from flask.json import jsonify
 from database.db_config import initialize_db
-from database.models import Transaction,Balance
+
 import  datetime
 from flask_jwt_extended import create_access_token
 from flask_jwt_extended import JWTManager
@@ -13,10 +14,10 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 import requests
 import json
 import os
+from pathlib import Path
 
-
-app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI']= "sqlite:////tmp/test.db"
+app = Flask(__name__,template_folder='templates')
+app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///test.db"
 # jwt = JWTManager(app)
 # app.config['MONGODB_SETTINGS'] = {
     
@@ -28,7 +29,17 @@ app.config['SQLALCHEMY_DATABASE_URI']= "sqlite:////tmp/test.db"
 #     }
 
 initialize_db(app)
-#flask-restful framework
+from database.models import Transaction,Balance
+from database.db_config import db
+from flask_migrate import Migrate
+with app.app_context():
+    db.create_all()
+# migrate = Migrate(app, db, directory=str((Path(__file__).parent / 'migrations').absolute()))
+# db.create_all()
+
+# db.session.commit()
+    
+#flask-restful framework`
 api = Api(app)
 
 # class SignupApi(Resource):
@@ -138,10 +149,10 @@ class TransactionApi(Resource):
     def post(self):
         user_id = request.form.get('user_id')
         ts= request.form.get('ts','')
-        transaction_amt=request.form.get('transaction_amt')
+        txn_amnt=request.form.get('txn_amnt')
         transaction=Transaction(user_id=user_id,
-                                ts=ts,
-                                transaction_amt=transaction_amt)
+                                # ts=ts,
+                                transaction_amt=txn_amnt)
         db.session.add(transaction)
         db.session.commit()
             # flash('Record was successfully added')
@@ -149,19 +160,22 @@ class TransactionApi(Resource):
     
     def get(self):
 
-        return render_template('index.html')
+        response = make_response(render_template('index.html', foo=42))
+        response.headers['Content-Type'] =  'text/html'
+        return response
 
 
 
 
 
-
+api.add_resource(TransactionApi,'/api/transaction')
 # api.add_resource(SignupApi, '/api/signup')
 # api.add_resource(LoginApi, '/api/login')
 # api.add_resource(LatestGists, '/api/create/activity')
 # api.add_resource(CreateActivity, '/api/create/gists')
 # api.add_resource(TransactionApi,'/')
-api.add_resource(TransactionApi,'/api/transaction')
+
 
 if __name__ == "__main__":
+    
     app.run(host='0.0.0.0',port=8000,debug=True)

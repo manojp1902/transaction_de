@@ -5,10 +5,15 @@ import datetime
 
 class Transaction(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, nullable = False)
+    user_id = db.Column(db.Integer, nullable = False,default=2)
     ts = db.Column(db.DateTime, nullable = False,
-                     default = datetime.datetime.now()) 
-    transaction_amt = db.Column(db.Float, nullable = False)
+                     default = datetime.datetime.now) 
+    transaction_amt = db.Column(db.Float, nullable = False,default=1000)
+    # def __init__(self,user_id,txn_amt):
+    #     self.user_id=user_id
+    #     self.transaction_amt=txn_amt
+     
+
 
 
 class Balance(db.Model):
@@ -18,7 +23,7 @@ class Balance(db.Model):
                      
    
    
-  
+
 
     # def hash_password(self):
     #     self.password = generate_password_hash(self.password).decode('utf8')
