@@ -1,12 +1,12 @@
 from flask_sqlalchemy import SQLAlchemy
-
+from flask_marshmallow import Marshmallow # new
 db = SQLAlchemy()
-ma=None
+ma = Marshmallow()
 def initialize_db(app):
     db.init_app(app)
     
 from flask_marshmallow import Marshmallow
 def initialise_marshmallow(app):
-    global ma
-    ma= Marshmallow(app)
+    
+    ma.init_app(app)
     

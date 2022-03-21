@@ -1,0 +1,27 @@
+<html>
+
+<body>
+    <table>
+        <thead>
+            <tr>
+                <th>User ID</th>
+
+                <th>Balance</th>
+
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for user in balance %}
+            <tr>
+                <td>{{ user.user_id }}</td>
+
+                <td>{{ user.balance }}</td>
+
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+
+</html>

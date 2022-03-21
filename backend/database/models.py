@@ -18,16 +18,19 @@ class Transaction(db.Model):
 
 
 class Balance(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, nullable=False)
-    balance = db.Column(db.Float,nullable= False,)
+    
+    user_id = db.Column(db.Integer, nullable=False,primary_key=True)
+    balance = db.Column(db.Float,nullable= False,default=0)
+    def __init__(self,user_id,balance):
+        self.user_id=user_id
+        self.balance=balance
                      
-from flask_marshmallow import Marshmallow
-ma = Marshmallow(app)
+# from flask_marshmallow import Marshmallow
+# ma = Marshmallow(app)
 
 class TransactionSchema(ma.Schema):
     class Meta:
-        fields = ('user_id','ts','transaction_amount')
+        fields = ('user_id','ts','transaction_amt')
 
 transaction_schema = TransactionSchema()
 transactions_schema = TransactionSchema(many=True)

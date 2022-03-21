@@ -26,6 +26,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///test.db"
 
 
 initialize_db(app)
+initialise_marshmallow(app)
 # initialise_marshmallow(app)
 from database.models import Transaction,Balance
 from database.db_config import db
@@ -175,17 +176,36 @@ class IndexPage(Resource):
         response.headers['Content-Type'] =  'text/html'
         return response
 
-class Balance(Resource):
+class BalanceApi(Resource):
     def get(self):
         # distinct_user_ids = session.query(Transaction.user_id).distinct().all()
         distinct_user_ids=db.session.query(Transaction.user_id).distinct().all()
         print("distinct user ids {}".format(distinct_user_ids))
-        result=transactions_schema.dump(distinct_user_ids)
-        return jsonify(result.data)
+        for user in distinct_user_ids:
+            print("user {}".format(user[0]))
+            ret=db.session.query(Transaction).filter(Transaction.user_id==user[0])
+            balance=0
+            for row in ret:
+                print("user_id",row.user_id,"txn_amnt",row.transaction_amt)
+                balance+= row.transaction_amt
+            print("Balance {}".format(balance))
+            balance_obj=Balance(user_id=user[0],balance=balance)
+            db.session.add(balance_obj)
+            db.session.commit()
+                
+        response = make_response(render_template('balance.html',balance=Balance.query.all()))
+        response.headers['Content-Type'] =  'text/html'
+        return response
+
+        # user_id=distinct_user_ids
+        # from database.models import transaction_schema
+        # result = transaction_schema.dump(distinct_user_ids)
+        # print("distinct user ids {}".format(result))
+        return jsonify(result)
 
 api.add_resource(IndexPage,'/')
 api.add_resource(TransactionApi,'/api/transaction')
-api.add_resource(Balance, '/api/balance')
+api.add_resource(BalanceApi, '/api/balance')
 
 
 if __name__ == "__main__":
